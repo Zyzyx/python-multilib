@@ -74,7 +74,7 @@ class test_methods(object):
         """confirm that a package is NOT multilib in code and in test data"""
         code = not meth.select(fpo)
         key = '%s.%s' % (fpo.name, fpo.arch)
-        msg += '(%s)' % self.print_fpo(fpo)
+        msg += ' (%s)' % self.print_fpo(fpo)
         print key
         print '  code says %s' % code
         if meth.name == 'devel':
@@ -210,28 +210,19 @@ class test_methods(object):
     def test_no(self):
         meth = multilib.NoMultilibMethod(None)
         for pinfo in self.packages.values():
-            if not pinfo['details']:
-                # None pops up when a 32-bit RPM was seen without a
-                # corresponding 64-bit one of the same name. This can happen
-                # because of dependencies I guess?
-                continue
-            fpo = fakepo.FakePackageObject(d=pinfo['details'])
+            fpo = fakepo.FakePackageObject(d=pinfo)
             self.confirm_false(fpo, meth)
 
     def test_all(self):
         meth = multilib.AllMultilibMethod(None)
         for pinfo in self.packages.values():
-            if not pinfo['details']:
-                continue
-            fpo = fakepo.FakePackageObject(d=pinfo['details'])
+            fpo = fakepo.FakePackageObject(d=pinfo)
             self.confirm_true(fpo, meth)
 
     def test_kernel(self):
         meth = multilib.KernelMultilibMethod(None)
         for pinfo in self.packages.values():
-            if not pinfo['details']:
-                continue
-            fpo = fakepo.FakePackageObject(d=pinfo['details'])
+            fpo = fakepo.FakePackageObject(d=pinfo)
             if fpo.arch.find('64') != -1:
                 if fpo.name.startswith('kernel'):
                     provides = False
@@ -246,9 +237,7 @@ class test_methods(object):
     def test_yaboot(self):
         meth = multilib.YabootMultilibMethod(None)
         for pinfo in self.packages.values():
-            if not pinfo['details']:
-                continue
-            fpo = fakepo.FakePackageObject(d=pinfo['details'])
+            fpo = fakepo.FakePackageObject(d=pinfo)
             if fpo.arch == 'ppc' and fpo.name.startswith('yaboot'):
                 self.confirm_true(fpo, meth)
             else:
@@ -262,9 +251,7 @@ class test_methods(object):
         self.list = self.conf.get(sect, 'white')
         meth = multilib.FileMultilibMethod(sect)
         for pinfo in self.packages.values():
-            if not pinfo['details']:
-                continue
-            fpo = fakepo.FakePackageObject(d=pinfo['details'])
+            fpo = fakepo.FakePackageObject(d=pinfo)
             for item in meth.list:
                 if fnmatch(fpo.name, item):
                     self.confirm_true(fpo, meth)
@@ -275,9 +262,7 @@ class test_methods(object):
         fco = fakeco.FakeConfigObject(self.conf)
         meth = multilib.RuntimeMultilibMethod(fco)
         for pinfo in self.packages.values():
-            if not pinfo['details']:
-                continue
-            fpo = fakepo.FakePackageObject(d=pinfo['details'])
+            fpo = fakepo.FakePackageObject(d=pinfo)
             if not self.do_runtime(fpo, meth):
                 self.confirm_false(fpo, meth)
 
@@ -288,9 +273,7 @@ class test_methods(object):
         fco = fakeco.FakeConfigObject(self.conf)
         meth = multilib.DevelMultilibMethod(fco)
         for pinfo in self.packages.values():
-            if not pinfo['details']:
-                continue
-            fpo = fakepo.FakePackageObject(d=pinfo['details'])
+            fpo = fakepo.FakePackageObject(d=pinfo)
             if fpo.name in bl:
                 self.confirm_false(fpo, meth, 'Blacklisted, should be False')
                 continue
