@@ -122,13 +122,13 @@ class RuntimeMultilibMethod(MultilibMethod):
         self.config = '/etc/multilib.conf'
         cp = ConfigParser()
         cp.read(self.config)
-        self.whitelist = cp.get(self.name, 'white')
-        self.blacklist = cp.get(self.name, 'black')
+        self.runtime_whitelist = cp.get(self.name, 'white')
+        self.runtime_blacklist = cp.get(self.name, 'black')
 
     def select(self, po):
-        if po.name in self.blacklist:
+        if po.name in self.runtime_blacklist:
             return False
-        if po.name in self.whitelist:
+        if po.name in self.runtime_whitelist:
             return True
         if MultilibMethod.select(self, po):
             return True
@@ -211,17 +211,17 @@ class RuntimeMultilibMethod(MultilibMethod):
 class DevelMultilibMethod(RuntimeMultilibMethod):
 
     def __init__(self, config):
+        super(DevelMultilibMethod, self).__init__(config)
         self.name = 'devel'
-        self.config = '/etc/multilib.conf'
         cp = ConfigParser()
         cp.read(self.config)
-        self.whitelist = cp.get(self.name, 'white')
-        self.blacklist = cp.get(self.name, 'black')
+        self.devel_whitelist = cp.get(self.name, 'white')
+        self.devel_blacklist = cp.get(self.name, 'black')
 
     def select(self, po):
-        if po.name in self.blacklist:
+        if po.name in self.devel_blacklist:
             return False
-        if po.name in self.whitelist:
+        if po.name in self.devel_whitelist:
             return True
         if RuntimeMultilibMethod.select(self, po):
             return True
