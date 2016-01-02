@@ -13,25 +13,30 @@ import fakeco
 import fakepo
 from fnmatch import fnmatch
 import multilib
+import os
 
 # if you want to test the testing with the original mash code
 #import mash.multilib as multilib
 
 class test_methods(object):
 
-    # TODO: separate out whitelists
-    # TODO: configurable test data files
-
     @classmethod
     def setup_class(cls):
         # read test data
         try:
-            fd = bz2.BZ2File('testdata/RHEL-7.1-Server-x86_64.json.bz2', 'r')
-            pj = json.load(fd)
-        except IOError:
+            files = os.listdir('testdata')
+        except OSError:
             print 'Run the tests in the same directory as multilib.py'
-            print 'There should be a testdata subdirectory there'
+            print 'There should be a testdata subdirectory there, and note'
+            print 'only the first .json.bz2 file will be considered'
             raise
+        pj = None
+        for f in files:
+            if fnmatch(f, '*.json.bz2'):
+                fd = bz2.BZ2File('testdata/RHEL-7.1-Server-x86_64.json.bz2', 'r')
+                pj = json.load(fd)
+                break # just take the first hit
+        assert pj, 'No test data found in testdata, create some with the gentestdata script'
         cls.packages = pj
         fd.close()
 
