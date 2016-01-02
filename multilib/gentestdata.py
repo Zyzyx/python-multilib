@@ -69,6 +69,9 @@ if __name__ == '__main__':
             if 'debuginfo' in fpo.name:
                 # debuginfos never have multilib, skip for brevity's sake
                 continue
+            if fpo.arch == 'noarch':
+                # do not care about noarch packages
+                continue
             key = '%s.%s' % (fpo.name, fpo.arch)
             data[key] = fpo.convert()
     fd = open(opts.outfile, 'w')
