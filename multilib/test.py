@@ -19,6 +19,9 @@ import multilib
 
 class test_methods(object):
 
+    # TODO: separate out whitelists
+    # TODO: configurable test data files
+
     @classmethod
     def setup_class(cls):
         # read test data
@@ -82,16 +85,20 @@ class test_methods(object):
             if fpo.arch in self.archmap.keys():
                 # this is 64-bit
                 key32 = '%s.%s' % (fpo.name, self.archmap[fpo.arch])
-                data = self.packages.has_key(key32)
+                data = not self.packages.has_key(key32)
             else:
                 # this is a 32-bit package
                 key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
-                data = self.packages.has_key(key64)
+                data = not self.packages.has_key(key64)
             print '  data says %s' % data
             assert code and data, msg
         assert code, msg
 
     def do_runtime(self, fpo, meth):
+        """
+        This method returns True if we tested a result, or None if we are
+        still unsure of what the result should be.
+        """
         sect = 'runtime'
         wl = self.conf.get(sect, 'white')
         bl = self.conf.get(sect, 'black')
@@ -118,7 +125,7 @@ class test_methods(object):
             for (p_name, p_flag, (p_e, p_v, p_r)) in fpo.provides:
                 if p_name == 'kernel':
                     self.confirm_false(fpo, meth, '32-bit kernel should be False')
-                    return # this is here intentionally
+                    return True # this is here intentionally
         for file in fpo.returnFileEntries():
             (dirname, filename) = file.rsplit('/', 1)
             # libraries in standard dirs
@@ -243,7 +250,7 @@ class test_methods(object):
             else:
                 self.confirm_false(fpo, meth)
 
-    # if using mash.multlib, uncomment this. Test is known to fail since the input file
+    # if using mash.multilib, uncomment this. Test is known to fail since the input file
     # format changed in python-multilib
     # @disable_test
     def test_file(self):
