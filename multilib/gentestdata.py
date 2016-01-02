@@ -23,8 +23,6 @@ logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 
-ARCHES = ('ppc64', 'x86_64')
-
 def get_options():
     parser = OptionParser(usage='%prog [options] path-to-compose')
     parser.add_option('-d', '--debug', default=False, action='store_true')
@@ -46,7 +44,7 @@ def find_repos(cpath):
     for (dirpath, dirnames, _) in os.walk(cpath):
         if 'repodata' in dirnames:
             # make sure this is a repo for a multilib-supporting arch
-            for arch in ARCHES:
+            for arch in ('ppc64', 'x86_64'):
                 if arch in dirpath:
                     ppath = dirpath
                     rpms = glob(os.path.join(dirpath, '*.rpm'))
@@ -72,22 +70,7 @@ if __name__ == '__main__':
                 # debuginfos never have multilib, skip for brevity's sake
                 continue
             key = '%s.%s' % (fpo.name, fpo.arch)
-            if fpo.arch not in ARCHES:
-                # we have found a 32-bit rpm
-                if data.has_key(key):
-                    # we have seen the 64-bit rpm already, this is multilib
-                    data[key]['multi'] = True
-                else:
-                    # have not seen the 64-bit rpm yet
-                    data[key] = {'details': None, 'multi': True}
-            else:
-                # we have found a 64-bit rpm (or something we don't care about)
-                if data.has_key(key):
-                    # we have seen the 32-bit rpm already, this is multilib
-                    data[key]['details'] = fpo.convert()
-                else:
-                    # we have not seen the 32-bit rpm
-                    data[key] = {'details': fpo.convert(), 'multi': False}
+            data[key] = fpo.convert()
     fd = open(opts.outfile, 'w')
     json.dump(data, fd, indent=2, sort_keys=True)
     fd.close()
