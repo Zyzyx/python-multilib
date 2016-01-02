@@ -75,7 +75,7 @@ class test_methods(object):
 
     def confirm_false(self, fpo, meth, msg='should be false'):
         """confirm that a package is NOT multilib in code and in test data"""
-        code = not meth.select(fpo)
+        code = meth.select(fpo)
         key = '%s.%s' % (fpo.name, fpo.arch)
         msg += ' (%s)' % self.print_fpo(fpo)
         print key
@@ -85,14 +85,14 @@ class test_methods(object):
             if fpo.arch in self.archmap.keys():
                 # this is 64-bit
                 key32 = '%s.%s' % (fpo.name, self.archmap[fpo.arch])
-                data = not self.packages.has_key(key32)
+                data = self.packages.has_key(key32)
             else:
                 # this is a 32-bit package
                 key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
-                data = not self.packages.has_key(key64)
+                data = self.packages.has_key(key64)
             print '  data says %s' % data
-            assert code and data, msg
-        assert code, msg
+            assert not code and not data, msg
+        assert not code, msg
 
     def do_runtime(self, fpo, meth):
         """
