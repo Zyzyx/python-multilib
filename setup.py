@@ -10,8 +10,6 @@ setup(
     license = "GPLv3",
     url = "https://github.com/Zyzyx/python-multilib.git",
     packages = ['multilib'],
-    #package_data = {'': ['conf/multilib.conf']},
-    #exclude_package_data = {'multilib': [
-    #    '*gentestdata*', '.*test.*']
-    #}
+    package_data = {'': ['multilib.conf']},
+    scripts = ['multilib/multilib_test_data']
 )
