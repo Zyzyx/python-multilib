@@ -11,7 +11,7 @@ import bz2
 from ConfigParser import ConfigParser
 import fakepo
 from fnmatch import fnmatch
-import multilib
+from multilib import multilib
 import os
 
 # if you want to test the testing with the original mash code
@@ -25,9 +25,8 @@ class test_methods(object):
         try:
             files = os.listdir('testdata')
         except OSError:
-            print 'Run the tests in the same directory as multilib.py'
-            print 'There should be a testdata subdirectory there, and note'
-            print 'only the first .json.bz2 file will be considered'
+            print 'There should be a testdata subdirectory in your CWD, and'
+            print 'note only the first .json.bz2 file found will be considered'
             raise
         pj = None
         for f in files:
@@ -35,7 +34,7 @@ class test_methods(object):
                 fd = bz2.BZ2File('testdata/RHEL-7.1-Server-x86_64.json.bz2', 'r')
                 pj = json.load(fd)
                 break # just take the first hit
-        assert pj, 'No test data found in testdata, create some with the gentestdata script'
+        assert pj, 'No test data found in testdata, create some with the multilib_test_data script'
         cls.packages = pj
         fd.close()
 
@@ -75,7 +74,7 @@ class test_methods(object):
                 key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
                 data = self.packages.has_key(key64)
             print '  data says %s' % data
-            #assert code and data, msg
+            assert code and data, msg
         assert code, msg
         return True
 
@@ -97,7 +96,7 @@ class test_methods(object):
                 key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
                 data = self.packages.has_key(key64)
             print '  data says %s' % data
-            #assert not code and not data, msg
+            assert not code and not data, msg
         assert not code, msg
         return True
 

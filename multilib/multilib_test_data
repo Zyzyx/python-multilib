@@ -13,7 +13,7 @@ except ImportError:
     # RHEL 7 and later
     import json
 
-import fakepo
+from multilib import multilib.fakepo
 
 # generate test data for multilib
 # accepts a path to a compose and writes out a bigass json file with multlib
@@ -37,7 +37,7 @@ def get_options():
 def get_fpo(rpmfile):
     """return a fake yum PackageObject for a given RPM"""
     po = yum.packages.YumLocalPackage(filename=rpmfile)
-    return fakepo.FakePackageObject(po=po)
+    return multilib.fakepo.FakePackageObject(po=po)
 
 def find_repos(cpath):
     """generator to recursively go down a path and find yum repositories"""
