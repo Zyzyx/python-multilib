@@ -9,7 +9,6 @@ except ImportError:
 
 import bz2
 from ConfigParser import ConfigParser
-import fakeco
 import fakepo
 from fnmatch import fnmatch
 import multilib
@@ -41,8 +40,9 @@ class test_methods(object):
         fd.close()
 
         # read multilib configuration
+        cls.conffile = '/etc/multilib.conf'
         cp = ConfigParser()
-        assert len(cp.read('/etc/multilib.conf')) == 1, 'missing /etc/multilib.conf'
+        assert len(cp.read(cls.conffile)) == 1, 'missing ' + cls.conffile
         cls.conf = cp
         cls.archmap = {'ppc64': 'ppc', 'x86_64': 'i686'}
         cls.revarchmap = dict((v, k) for k, v in cls.archmap.items())
@@ -259,9 +259,9 @@ class test_methods(object):
     # format changed in python-multilib
     # @disable_test
     def test_file(self):
-        sect = 'runtime'
-        self.list = self.conf.get(sect, 'white')
-        meth = multilib.FileMultilibMethod(sect)
+        sect = 'multilib'
+        self.list = self.conf.get(sect, 'packages')
+        meth = multilib.FileMultilibMethod(self.conffile)
         for pinfo in self.packages.values():
             fpo = fakepo.FakePackageObject(d=pinfo)
             for item in meth.list:
@@ -271,8 +271,7 @@ class test_methods(object):
             self.confirm_false(fpo, meth)
 
     def test_runtime(self):
-        fco = fakeco.FakeConfigObject(self.conf)
-        meth = multilib.RuntimeMultilibMethod(fco)
+        meth = multilib.RuntimeMultilibMethod()
         for pinfo in self.packages.values():
             fpo = fakepo.FakePackageObject(d=pinfo)
             if not self.do_runtime(fpo, meth):
@@ -282,8 +281,7 @@ class test_methods(object):
         sect = 'devel'
         wl = self.conf.get(sect, 'white')
         bl = self.conf.get(sect, 'black')
-        fco = fakeco.FakeConfigObject(self.conf)
-        meth = multilib.DevelMultilibMethod(fco)
+        meth = multilib.DevelMultilibMethod()
         for pinfo in self.packages.values():
             fpo = fakepo.FakePackageObject(d=pinfo)
             if fpo.name in bl:

@@ -53,12 +53,11 @@ class AllMultilibMethod(MultilibMethod):
 
 class FileMultilibMethod(MultilibMethod):
 
-    def __init__(self, section):
-        self.config = '/etc/multilib.conf'
+    def __init__(self, config='/etc/multilib.conf'):
         self.name = 'file'
-        cp = ConfigParser()
-        cp.read(self.config)
-        self.list = cp.get(section, 'white')
+        self.cp = ConfigParser()
+        self.cp.read(config)
+        self.list = self.cp.get('multilib', 'packages')
 
     def select(self, po):
         for item in self.list:
@@ -117,13 +116,12 @@ class RuntimeMultilibMethod(MultilibMethod):
     # lsb
     by_dir.add('/etc/lsb-release.d')
 
-    def __init__(self, config):
+    def __init__(self, config='/etc/multilib.conf'):
         self.name = 'runtime'
-        self.config = '/etc/multilib.conf'
-        cp = ConfigParser()
-        cp.read(self.config)
-        self.runtime_whitelist = cp.get(self.name, 'white')
-        self.runtime_blacklist = cp.get(self.name, 'black')
+        self.cp = ConfigParser()
+        self.cp.readfp(open(config, 'r'))
+        self.runtime_whitelist = self.cp.get(self.name, 'white')
+        self.runtime_blacklist = self.cp.get(self.name, 'black')
 
     def select(self, po):
         if po.name in self.runtime_blacklist:
@@ -210,13 +208,11 @@ class RuntimeMultilibMethod(MultilibMethod):
 
 class DevelMultilibMethod(RuntimeMultilibMethod):
 
-    def __init__(self, config):
+    def __init__(self, config='/etc/multilib.conf'):
         super(DevelMultilibMethod, self).__init__(config)
         self.name = 'devel'
-        cp = ConfigParser()
-        cp.read(self.config)
-        self.devel_whitelist = cp.get(self.name, 'white')
-        self.devel_blacklist = cp.get(self.name, 'black')
+        self.devel_whitelist = self.cp.get(self.name, 'white')
+        self.devel_blacklist = self.cp.get(self.name, 'black')
 
     def select(self, po):
         if po.name in self.devel_blacklist:
