@@ -75,8 +75,9 @@ class test_methods(object):
                 key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
                 data = self.packages.has_key(key64)
             print '  data says %s' % data
-            assert code and data, msg
+            #assert code and data, msg
         assert code, msg
+        return True
 
     def confirm_false(self, fpo, meth, msg='should be false'):
         """confirm that a package is NOT multilib in code and in test data"""
@@ -96,8 +97,9 @@ class test_methods(object):
                 key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
                 data = self.packages.has_key(key64)
             print '  data says %s' % data
-            assert not code and not data, msg
+            #assert not code and not data, msg
         assert not code, msg
+        return True
 
     def do_runtime(self, fpo, meth):
         """
@@ -108,47 +110,38 @@ class test_methods(object):
         wl = self.conf.get(sect, 'white')
         bl = self.conf.get(sect, 'black')
         if fpo.name in bl:
-            self.confirm_false(fpo, meth, 'Blacklisted, should be False')
-            return True
+            return self.confirm_false(fpo, meth, 'Blacklisted, should be False')
         if fpo.name in wl:
-            self.confirm_true(fpo, meth, 'Whitelisted, should be True')
-            return True
+            return self.confirm_true(fpo, meth, 'Whitelisted, should be True')
         if fpo.arch.find('64') != -1:
             if fpo.name in meth.PREFER_64:
-                self.confirm_true(fpo, meth, 'preferred 64-bit, should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'preferred 64-bit, should be True')
             if fpo.name.startswith('kernel'):
                 provides = False
                 for (p_name, p_flag, (p_e, p_v, p_r)) in fpo.provides:
                     if p_name == 'kernel' or p_name == 'kernel-devel':
                         provides = True
                 if provides:
-                    self.confirm_true(fpo, meth, '64-bit kernel, should be True')
-                    return True
+                    return self.confirm_true(fpo, meth, '64-bit kernel, should be True')
         if fpo.name.startswith('kernel'):
             # looks redundant, but we're not 64-bit here
             for (p_name, p_flag, (p_e, p_v, p_r)) in fpo.provides:
                 if p_name == 'kernel':
-                    self.confirm_false(fpo, meth, '32-bit kernel should be False')
-                    return True # this is here intentionally
+                    return self.confirm_false(fpo, meth, '32-bit kernel should be False')
         for file in fpo.returnFileEntries():
             (dirname, filename) = file.rsplit('/', 1)
             # libraries in standard dirs
             if dirname in meth.LIBDIRS and fnmatch(filename, '*.so.*'):
-                self.confirm_true(fpo, meth, '.so.x files, should be True')
-                return True
+                return self.confirm_true(fpo, meth, '.so.x files, should be True')
             if dirname in meth.by_dir:
-                self.confirm_true(fpo, meth, 'std dirs, should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'std dirs, should be True')
             # mysql, qt, etc.
             if dirname == '/etc/ld.so.conf.d' and filename.endswith('.conf'):
-                self.confirm_true(fpo, meth, 'ld config, should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'ld config, should be True')
             # nss (Some nss modules end in .so instead of .so.X)
             # db (db modules end in .so instead of .so.X)
             if dirname in meth.ROOTLIBDIRS and (filename.startswith('libnss_') or filename.startswith('libdb-')):
-                self.confirm_true(fpo, meth, '.so files, should be True: %s')
-                return True
+                return self.confirm_true(fpo, meth, '.so files, should be True: %s')
             # Optimization:
             # All tests beyond here are for things in USRLIBDIRS
             if not dirname.startswith(tuple(meth.USRLIBDIRS)):
@@ -158,64 +151,49 @@ class test_methods(object):
             if dirname.startswith(('/usr/lib/gtk-2.0', '/usr/lib64/gtk-2.0')):
                 # gtk2-engines
                 if fnmatch(dirname, '/usr/lib*/gtk-2.0/*/engines'):
-                    self.confirm_true(fpo, meth, 'gtk2 engines should be True')
-                    return True
+                    return self.confirm_true(fpo, meth, 'gtk2 engines should be True')
                 # accessibility
                 if fnmatch(dirname, '/usr/lib*/gtk-2.0/*/modules'):
-                    self.confirm_true(fpo, meth, 'gtk accessibility should be True')
-                    return True
+                    return self.confirm_true(fpo, meth, 'gtk accessibility should be True')
                 # scim-bridge-gtk
                 if fnmatch(dirname, '/usr/lib*/gtk-2.0/*/immodules'):
-                    self.confirm_true(fpo, meth, 'scim-bridge-gtk should be True')
-                    return True
+                    return self.confirm_true(fpo, meth, 'scim-bridge-gtk should be True')
                 # images
                 if fnmatch(dirname, '/usr/lib*/gtk-2.0/*/loaders'):
-                    self.confirm_true(fpo, meth, 'image loaders should be True')
-                    return True
+                    return self.confirm_true(fpo, meth, 'image loaders should be True')
                 if fnmatch(dirname, '/usr/lib*/gtk-2.0/*/printbackends'):
-                    self.confirm_true(fpo, meth, 'image backends should be True')
-                    return True
+                    return self.confirm_true(fpo, meth, 'image backends should be True')
                 if fnmatch(dirname, '/usr/lib*/gtk-2.0/*/filesystems'):
-                    self.confirm_true(fpo, meth, 'gtk filesystems should be True')
-                    return True
+                    return self.confirm_true(fpo, meth, 'gtk filesystems should be True')
                 # Optimization:
                 # No tests beyond here for things in /usr/lib*/gtk-2.0
                 continue
             # gstreamer
             if dirname.startswith(('/usr/lib/gstreamer-', '/usr/lib64/gstreamer-')):
-                self.confirm_true(fpo, meth, 'gstreamer should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'gstreamer should be True')
             # qt/kde fun
             if fnmatch(dirname, '/usr/lib*/qt*/plugins/*'):
-                self.confirm_true(fpo, meth, 'qt plugins should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'qt plugins should be True')
             if fnmatch(dirname, '/usr/lib*/kde*/plugins/*'):
-                self.confirm_true(fpo, meth, 'kde plugins should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'kde plugins should be True')
             # qml
             if fnmatch(dirname, '/usr/lib*/qt5/qml/*'):
-                seflf.confirm_true(fpo, meth, 'qml should be True')
-                return True
+                return seflf.confirm_true(fpo, meth, 'qml should be True')
             # images
             if fnmatch(dirname, '/usr/lib*/gdk-pixbuf-2.0/*/loaders'):
-                self.confirm_true(fpo, meth, 'gdk-pixbuf should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'gdk-pixbuf should be True')
             # xine-lib
             if fnmatch(dirname, '/usr/lib*/xine/plugins/*'):
-                assert self.confirm_true(fpo, meth, 'xine-lib should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'xine-lib should be True')
             # oprofile
             if dirname in meth.OPROFILEDIRS and fnmatch(filename, '*.so.*'):
-                self.confirm_true(fpo, meth, 'oprofile should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'oprofile should be True')
             # wine
             if dirname in meth.WINEDIRS and filename.endswith('.so'):
-                self.confirm_true(fpo, meth, 'wine .so should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'wine .so should be True')
             # sane drivers
             if dirname in meth.SANEDIRS and filename.startswith('libsane-'):
-                self.confirm_true(fpo, meth, 'sane drivers should be True')
-                return True
+                return self.confirm_true(fpo, meth, 'sane drivers should be True')
 
     # test methods executed by nose start here
 
@@ -255,8 +233,8 @@ class test_methods(object):
             else:
                 self.confirm_false(fpo, meth)
 
-    # if using mash.multilib, uncomment this. Test is known to fail since the input file
-    # format changed in python-multilib
+    # if using mash.multilib, uncomment this. Test is known to fail since the
+    # input file format changed in python-multilib
     # @disable_test
     def test_file(self):
         sect = 'multilib'
@@ -267,7 +245,7 @@ class test_methods(object):
             for item in meth.list:
                 if fnmatch(fpo.name, item):
                     self.confirm_true(fpo, meth)
-                    continue
+                    break
             self.confirm_false(fpo, meth)
 
     def test_runtime(self):
@@ -286,29 +264,31 @@ class test_methods(object):
             fpo = fakepo.FakePackageObject(d=pinfo)
             if fpo.name in bl:
                 self.confirm_false(fpo, meth, 'Blacklisted, should be False')
-                continue
-            if fpo.name in wl:
+            elif fpo.name in wl:
                 self.confirm_true(fpo, meth, 'Whitelisted, should be True')
-                continue
-            if self.do_runtime(fpo, meth):
-                # returns True if a value was identified and asserted, False otherwise
-                continue
-            if fpo.name.startswith('ghc-'):
+            elif self.do_runtime(fpo, meth):
+                # returns True if a value was identified and asserted
+                # False otherwise
+                pass
+            elif fpo.name.startswith('ghc-'):
                 self.confirm_false(fpo, meth, 'ghc package, should be False')
-                continue
-            if fpo.name.startswith('kernel'):
+            elif fpo.name.startswith('kernel'):
                 # looks redundant, but we're not 64-bit here
+                is_kd, is_dev = False, False
                 for (p_name, p_flag, (p_e, p_v, p_r)) in fpo.provides:
                     if p_name == 'kernel-devel':
-                        self.confirm_false(fpo, meth, 'kernel-devel, should be False')
-                        continue
+                        is_kd = True
+                        break
                     if p_name.endswith('-devel') or p_name.endswith('-static'):
-                        self.confirm_true(fpo, meth, 'kernel-*-devel, should be True')
-                        continue
-            if fpo.name.endswith('-devel'):
+                        is_dev = True
+                        break
+                if is_kd:
+                    self.confirm_false(fpo, meth, 'kernel-devel, should be False')
+                elif is_dev:
+                    self.confirm_true(fpo, meth, 'kernel-*-devel, should be True')
+            elif fpo.name.endswith('-devel'):
                 self.confirm_true(fpo, meth, '-devel package, should be True')
-                continue
-            if fpo.name.endswith('-static'):
+            elif fpo.name.endswith('-static'):
                 self.confirm_true(fpo, meth, '-static package, should be True')
-                continue
-            self.confirm_false(fpo, meth)
+            else:
+                self.confirm_false(fpo, meth)
