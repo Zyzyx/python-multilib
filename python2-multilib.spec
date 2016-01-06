@@ -5,10 +5,12 @@ Summary:    a module for determining if a package is multilib or not
 Group:      Development/Libraries
 License:    GPLv3+
 URL:        https://github.com/Zyzyx/python-multilib/archive/master.zip
-Source0:    %{name}-%{version}.zip
+Source0:    %{name}-%{version}.tar.gz
 
-BuildRequires:  python2-devel
-Requires:       python2
+BuildRequires:  python-devel
+BuildRequires:  python-setuptools
+Requires:       python
+BuildArch:      noarch
 
 %description
 A Python module that supports several multilib "methods" useful for determining
@@ -19,17 +21,17 @@ if a 32-bit package should be included with its 64-bit analogue in a compose.
 
 
 %build
-%configure
-%py2_build
+%{__python} setup.py build
 
 %install
-%py2_install
+%{__python} setup.py install --skip-build --root %{buildroot}
 
 
 %files
-%{python2-sitedir}/%{name}/*
+%{python_sitelib}/*
 %{_bindir}/multilib_test_data
 %doc README.md LICENSE
+%{_sysconfdir}/multilib.conf
 
 
 %changelog

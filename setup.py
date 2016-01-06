@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = "multilib",
+    name = "python2-multilib",
     version = "1.0",
     author = "Jay Greguske",
     author_email = "jgregusk@redhat.com",
