@@ -1,5 +1,5 @@
 Name:       python2-multilib
-Version:    1.0
+Version:    1.1
 Release:    1%{?dist}
 Summary:    a module for determining if a package is multilib or not
 Group:      Development/Libraries
@@ -35,5 +35,8 @@ if a 32-bit package should be included with its 64-bit analogue in a compose.
 
 
 %changelog
+* Tue Jul 21 2009 Jay Greguske <jgregusk@redhat.com> - 1.1-1
+- consider dependencies in multilib testing
+- fix a couple import errors
 * Tue Jul 21 2009 Jay Greguske <jgregusk@redhat.com> - 1.0-1
 - Initial RPM release
