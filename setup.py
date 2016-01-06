@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "python2-multilib",
-    version = "1.0",
+    version = "1.1",
     author = "Jay Greguske",
     author_email = "jgregusk@redhat.com",
     description = ("module for determining if a package is multilib"),
