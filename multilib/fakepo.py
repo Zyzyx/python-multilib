@@ -9,11 +9,13 @@ class FakePackageObject(object):
             self.name = po.name
             self.arch = po.arch
             self.provides = po.provides
+            self.requires = po.requires
             self.files = po.returnFileEntries()
         elif d:
             self.name = d['name']
             self.arch = d['arch']
             self.provides = d['provides']
+            self.requires = d['requires']
             self.files = d['files']
         else:
             raise RuntimeError('fake package objects must come from a real yum object or dictionary')
@@ -23,6 +25,7 @@ class FakePackageObject(object):
             'name': self.name,
             'arch': self.arch,
             'provides': self.provides,
+            'requires': self.requires,
             'files': self.files
         }
 

@@ -11,7 +11,7 @@ import bz2
 from ConfigParser import ConfigParser
 import fakepo
 from fnmatch import fnmatch
-from multilib import multilib
+import multilib
 import os
 
 # if you want to test the testing with the original mash code
@@ -31,7 +31,7 @@ class test_methods(object):
         pj = None
         for f in files:
             if fnmatch(f, '*.json.bz2'):
-                fd = bz2.BZ2File('testdata/RHEL-7.1-Server-x86_64.json.bz2', 'r')
+                fd = bz2.BZ2File(os.path.join('testdata',f), 'r')
                 pj = json.load(fd)
                 break # just take the first hit
         assert pj, 'No test data found in testdata, create some with the multilib_test_data script'
@@ -56,6 +56,40 @@ class test_methods(object):
         fpod = fpo.convert()
         return '%s.%s' % (fpod['name'], fpod['arch'])
 
+    def check_data(self, fpo, code):
+        """see if a package is multilib in the testdata"""
+        if fpo.arch in self.archmap.keys():
+            # fpo is 64-bit package
+            key32 = '%s.%s' % (fpo.name, self.archmap[fpo.arch])
+            data = self.packages.has_key(key32)
+        else:
+            # fpo is 32-bit
+            key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
+            data = self.packages.has_key(key64)
+        if data:
+            # Both arches of packages are found, so this could be multilib,
+            # however if a package was brought in because of dependencies and
+            # not because of multilib-ness, we need to consider that and return
+            # False instead
+            for pkg in self.packages.values():
+                escape = False
+                other_po = fakepo.FakePackageObject(d=pkg)
+                if other_po.name == fpo.name:
+                    continue
+                for (p_name, p_flag, (p_e, p_v, p_r)) in fpo.provides:
+                    for (r_name, r_flag, (r_e, r_v, r_r)) in other_po.requires:
+                        if p_name == r_name:
+                            print '  %s requires this (%s)' % (other_po.name, p_name)
+                            data = code
+                            escape = True
+                            break
+                    if escape:
+                        break
+                if escape:
+                    break
+        print '  data says %s' % data
+        return data
+
     def confirm_true(self, fpo, meth, msg='should be true'):
         """confirm that a package is multilib in code and in test data"""
         code = meth.select(fpo)
@@ -65,17 +99,9 @@ class test_methods(object):
         print '  code says %s' % code
         if meth.name == 'devel':
             # the data assumes the 'devel' method was used in compose
-            if fpo.arch in self.archmap.keys():
-                # this is 64-bit
-                key32 = '%s.%s' % (fpo.name, self.archmap[fpo.arch])
-                data = self.packages.has_key(key32)
-            else:
-                # this is a 32-bit package
-                key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
-                data = self.packages.has_key(key64)
-            print '  data says %s' % data
-            assert code and data, msg
-        assert code, msg
+            assert code and self.check_data(fpo, code), msg
+        else:
+            assert code, msg
         return True
 
     def confirm_false(self, fpo, meth, msg='should be false'):
@@ -87,17 +113,9 @@ class test_methods(object):
         print '  code says %s' % code
         if meth.name == 'devel':
             # the data assumes the 'devel' method was used in compose
-            if fpo.arch in self.archmap.keys():
-                # this is 64-bit
-                key32 = '%s.%s' % (fpo.name, self.archmap[fpo.arch])
-                data = self.packages.has_key(key32)
-            else:
-                # this is a 32-bit package
-                key64 = '%s.%s' % (fpo.name, self.revarchmap[fpo.arch])
-                data = self.packages.has_key(key64)
-            print '  data says %s' % data
-            assert not code and not data, msg
-        assert not code, msg
+            assert not code and not self.check_data(fpo, code), msg
+        else:
+            assert not code, msg
         return True
 
     def do_runtime(self, fpo, meth):
@@ -177,8 +195,8 @@ class test_methods(object):
                 return self.confirm_true(fpo, meth, 'kde plugins should be True')
             # qml
             if fnmatch(dirname, '/usr/lib*/qt5/qml/*'):
-                return seflf.confirm_true(fpo, meth, 'qml should be True')
-            # images
+                return self.confirm_true(fpo, meth, 'qml should be True')
+            # image
             if fnmatch(dirname, '/usr/lib*/gdk-pixbuf-2.0/*/loaders'):
                 return self.confirm_true(fpo, meth, 'gdk-pixbuf should be True')
             # xine-lib
@@ -291,3 +309,10 @@ class test_methods(object):
                 self.confirm_true(fpo, meth, '-static package, should be True')
             else:
                 self.confirm_false(fpo, meth)
+
+if __name__ == '__main__':
+    print 'This should be run with Nose like so:'
+    print '  $ nosetests test.py'
+    print
+    print 'You may need to install python-nose before running that command.'
+

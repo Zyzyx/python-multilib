@@ -12,8 +12,7 @@ try:
 except ImportError:
     # RHEL 7 and later
     import json
-
-from multilib import multilib.fakepo
+import multilib.fakepo
 
 # generate test data for multilib
 # accepts a path to a compose and writes out a bigass json file with multlib
@@ -49,13 +48,22 @@ def find_repos(cpath):
                     ppath = dirpath
                     rpms = glob(os.path.join(dirpath, '*.rpm'))
                     if len(rpms) == 0:
+                        # rpms are not beside the repodata directory
                         log.debug('no rpms in base dir')
                         ppath = os.path.join(dirpath, 'Packages')
                         rpms = glob(os.path.join(ppath, '*.rpm'))
                         if len(rpms) == 0:
                             log.debug('no rpms in Packages')
-                            continue
-                    yield ppath
+                            # rpms are not in the Packages directory, Fedora
+                            # does this with a, b, c subdirs
+                            for subdir in os.listdir(ppath):
+                                rpms = glob(os.path.join(ppath, subdir, '*.rpm'))
+                                if len(rpms) == 0:
+                                    log.debug('no rpms anywhere!')
+                                    continue
+                                yield os.path.join(ppath, subdir)
+                        else:
+                            yield ppath
         for deeperdir in dirnames:
             find_repos(os.path.join(dirpath, deeperdir))
 
