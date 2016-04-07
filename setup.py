@@ -1,5 +1,8 @@
 #!/usr/bin/python
 from setuptools import setup, find_packages
+import distutils.command.sdist
+
+distutils.command.sdist.sdist.default_format = {"posix": "bztar"}
 
 setup(
     name = "python-multilib",
