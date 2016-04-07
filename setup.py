@@ -12,5 +12,6 @@ setup(
     packages = find_packages(),
     package_data = {'': ['README.md', 'LICENSE']},
     data_files = [('/etc', ['etc/multilib.conf'])],
-    scripts = ['multilib/multilib_test_data']
+    scripts = ['multilib/multilib_test_data'],
+    test_suite      = "tests",
 )
