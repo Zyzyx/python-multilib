@@ -4,7 +4,10 @@ from glob import glob
 import logging
 from optparse import OptionParser
 import os
+import sys
 import yum.packages
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 try:
     # RHEL 6 and earlier

@@ -1,5 +1,10 @@
 #!/usr/bin/python -tt
 
+import sys
+import os
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 try:
     # RHEL 6 and earlier
     import simplejson as json
@@ -12,7 +17,6 @@ from ConfigParser import ConfigParser
 import fakepo
 from fnmatch import fnmatch
 import multilib
-import os
 
 # if you want to test the testing with the original mash code
 #import mash.multilib as multilib
