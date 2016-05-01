@@ -23,6 +23,7 @@ setup(
     license = "GPLv2",
     url = "https://github.com/Zyzyx/python-multilib.git",
     packages = packages,
+    install_requires = ['six'],
     package_data = {'': ['README.md', 'LICENSE']},
     data_files = [('/etc', ['etc/multilib.conf'])],
     test_suite      = "tests",
