@@ -13,7 +13,7 @@
 
 import os
 from fnmatch import fnmatch
-from ConfigParser import ConfigParser
+from six.moves import configparser
 
 class MultilibMethod(object):
     PREFER_64 = frozenset(
@@ -55,7 +55,7 @@ class FileMultilibMethod(MultilibMethod):
 
     def __init__(self, config='/etc/multilib.conf'):
         self.name = 'file'
-        self.cp = ConfigParser()
+        self.cp = configparser.ConfigParser()
         self.cp.read(config)
         self.list = self.cp.get('multilib', 'packages')
 
@@ -118,7 +118,7 @@ class RuntimeMultilibMethod(MultilibMethod):
 
     def __init__(self, config='/etc/multilib.conf'):
         self.name = 'runtime'
-        self.cp = ConfigParser()
+        self.cp = configparser.ConfigParser()
         self.cp.readfp(open(config, 'r'))
         self.runtime_whitelist = self.cp.get(self.name, 'white')
         self.runtime_blacklist = self.cp.get(self.name, 'black')
